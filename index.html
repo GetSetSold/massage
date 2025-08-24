@@ -32,28 +32,34 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
-// Fetch local JSON file from the same repo
+const SUPABASE_URL = 'https://nkjxlwuextxzpeohutxz.supabase.co/rest/v1';
+const SUPABASE_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ranhsd3VleHR4enBlb2h1dHh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzIzMTI5MDQsImV4cCI6MjA0Nzg4ODkwNH0.S3qHT3l4FDV5T0uPI8q4SDo6O-87ApDILE2OTsWLg_0';
+
+// Fetch data from Supabase table 'massage'
 async function fetchConditions() {
-  const res = await fetch('./massage_conditions.json');
+  const res = await fetch(`${SUPABASE_URL}/massage?select=*`, {
+    headers: {
+      'apikey': SUPABASE_API_KEY,
+      'Authorization': `Bearer ${SUPABASE_API_KEY}`
+    }
+  });
   return res.json();
 }
 
-// Render a card
 function renderCard(cond) {
   const card = document.createElement('div');
   card.className = 'card';
   card.innerHTML = `
-    <img src="${cond['Image URL'] || 'https://via.placeholder.com/400x200?text=No+Image'}" alt="${cond.Condition}">
-    <h3>${cond.Condition}</h3>
-    <p><strong>Definition:</strong> ${cond.Definition || 'N/A'}</p>
-    <p><strong>Best Technique:</strong> ${cond['Best Massage Technique / Steps'] || 'N/A'}</p>
-    <p><strong>Contraindications:</strong> ${cond['Massage Contraindication'] || 'N/A'}</p>
-    <button class="btn" onclick="downloadPDF('${cond.Condition}', '${cond.Definition}', '${cond['Best Massage Technique / Steps']}', '${cond['Massage Contraindication']}')">Download PDF</button>
+    <img src="${cond.image_url || 'https://via.placeholder.com/400x200?text=No+Image'}" alt="${cond.condition}">
+    <h3>${cond.condition}</h3>
+    <p><strong>Definition:</strong> ${cond.definition || 'N/A'}</p>
+    <p><strong>Best Technique:</strong> ${cond.best_technique || 'N/A'}</p>
+    <p><strong>Contraindications:</strong> ${cond.contraindication || 'N/A'}</p>
+    <button class="btn" onclick="downloadPDF('${cond.condition}','${cond.definition}','${cond.best_technique}','${cond.contraindication}')">Download PDF</button>
   `;
   return card;
 }
 
-// Render all and handle search
 async function renderAll() {
   const resultsEl = document.getElementById('results');
   let conditions = await fetchConditions();
@@ -67,12 +73,11 @@ async function renderAll() {
 
   document.getElementById('searchInput').addEventListener('input', e => {
     const q = e.target.value.toLowerCase();
-    const filtered = conditions.filter(c => c.Condition.toLowerCase().includes(q));
+    const filtered = conditions.filter(c => c.condition.toLowerCase().includes(q));
     display(filtered);
   });
 }
 
-// PDF download function
 function downloadPDF(condition, definition, technique, contraindication) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
@@ -88,7 +93,6 @@ function downloadPDF(condition, definition, technique, contraindication) {
   doc.save(`${condition}.pdf`);
 }
 
-// Initialize
 renderAll();
 </script>
 </body>
