@@ -1,0 +1,535 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Massage Condition Guide</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    .modal { display:none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); }
+    .modal.active { display:flex; }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <div class="max-w-5xl mx-auto p-6">
+    <h1 class="text-3xl font-bold mb-2">Massage Condition Guide</h1>
+    <p class="text-sm text-gray-600 mb-6">Search a condition to view best techniques, contraindications, definition, and a relevant diagram. Click the result to open a detailed card and download a PDF.</p>
+
+    <!-- Search and list -->
+    <div class="flex items-center gap-3 mb-4">
+      <input id="searchBox" type="text" placeholder="Search condition..." class="flex-1 p-3 rounded border border-gray-300 focus:ring focus:ring-blue-200 outline-none" />
+      <button id="clearBtn" class="px-3 py-2 bg-gray-200 rounded">Clear</button>
+    </div>
+
+    <div id="results" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+
+    <!-- Modal -->
+    <div id="modal" class="modal items-center justify-center p-4">
+      <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full p-6 relative">
+        <button id="closeModal" class="absolute right-2 top-2 px-3 py-1 rounded bg-gray-100">✕</button>
+        <div class="flex flex-col md:flex-row gap-4">
+          <img id="mImg" class="w-full md:w-1/3 rounded object-contain max-h-64 bg-gray-50" alt="Condition image"/>
+          <div class="flex-1">
+            <h2 id="mTitle" class="text-2xl font-bold mb-2"></h2>
+            <p class="text-sm text-gray-700 mb-2"><strong>Definition:</strong> <span id="mDef"></span></p>
+            <p class="text-sm text-gray-700 mb-2"><strong>Best Massage Technique / Steps:</strong> <span id="mTech"></span></p>
+            <p class="text-sm text-gray-700"><strong>Contraindications:</strong> <span id="mContra"></span></p>
+            <button id="pdfBtn" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded shadow">Download PDF</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+// Embedded dataset (50 conditions). Replace 'your-supabase-url' with your project URL and upload matching images.
+const data = [
+  {
+    "Condition": "Diabetes",
+    "Definition": "Metabolic disease causing high blood glucose and possible neuropathy/poor circulation.",
+    "Best Massage Technique / Steps": "Gentle Swedish; light-to-moderate pressure; focus on circulation; check feet/limbs for sensation; shorter sessions if needed.",
+    "Massage Contraindication": "Avoid areas with reduced sensation, ulcers, or infections; avoid aggressive deep tissue on extremities; monitor for hypoglycemia.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/diabetes.png",
+    "Slug": "diabetes"
+  },
+  {
+    "Condition": "High Blood Pressure (Hypertension)",
+    "Definition": "Blood pressure persistently above normal (\u2265140/90 without treatment).",
+    "Best Massage Technique / Steps": "Relaxation focus: effleurage, petrissage; slow pacing; neck/shoulders/back; breath cueing.",
+    "Massage Contraindication": "Uncontrolled hypertension: defer massage; avoid vigorous/deep work, heat hydrotherapy; avoid head-down positions.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/high-blood-pressure-hypertension.png",
+    "Slug": "high-blood-pressure-hypertension"
+  },
+  {
+    "Condition": "Low Blood Pressure (Hypotension)",
+    "Definition": "Blood pressure lower than normal with possible dizziness or fainting.",
+    "Best Massage Technique / Steps": "Brisk effleurage, light tapotement; gradual position changes; end seated; hydrate.",
+    "Massage Contraindication": "Avoid sudden postural changes and overly sedating techniques; monitor dizziness.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/low-blood-pressure-hypotension.png",
+    "Slug": "low-blood-pressure-hypotension"
+  },
+  {
+    "Condition": "Tension Headache",
+    "Definition": "Headache from muscle tension in scalp/neck; bilateral, band-like pressure.",
+    "Best Massage Technique / Steps": "Scalp massage; trigger points upper traps/SCM/suboccipitals; gentle neck stretches; jaw relaxation.",
+    "Massage Contraindication": "Avoid heavy pressure on cranium; red flags (sudden severe headache, neuro signs) require medical referral.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/tension-headache.png",
+    "Slug": "tension-headache"
+  },
+  {
+    "Condition": "Migraine",
+    "Definition": "Recurrent pulsating headache often with nausea and light sensitivity; may have aura.",
+    "Best Massage Technique / Steps": "Quiet room; gentle head/neck/shoulders; diaphragmatic breathing; post-episode maintenance for neck/trigger points.",
+    "Massage Contraindication": "Active severe migraine with neurologic deficits\u2014refer; avoid strong smells and bright light; avoid deep pressure.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/migraine.png",
+    "Slug": "migraine"
+  },
+  {
+    "Condition": "Pregnancy (Uncomplicated)",
+    "Definition": "Normal gestation without high-risk factors.",
+    "Best Massage Technique / Steps": "Side-lying positioning; gentle Swedish; edema strokes toward heart; support pillows; focus low back/hips/feet (light).",
+    "Massage Contraindication": "High-risk pregnancy, preeclampsia, severe swelling with headache/visual changes; avoid deep abdominal work; avoid prone post 1st trimester.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/pregnancy-uncomplicated.png",
+    "Slug": "pregnancy-uncomplicated"
+  },
+  {
+    "Condition": "Postpartum",
+    "Definition": "6\u201312 weeks after delivery with changing posture and stress.",
+    "Best Massage Technique / Steps": "Low back/neck/shoulders; gentle abdominal work if medically cleared; lymphatic light strokes for edema.",
+    "Massage Contraindication": "Cesarean/incision not healed; infection, fever, DVT signs; avoid prone if uncomfortable.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/postpartum.png",
+    "Slug": "postpartum"
+  },
+  {
+    "Condition": "Osteoarthritis",
+    "Definition": "Degenerative joint disease with cartilage wear causing pain/stiffness.",
+    "Best Massage Technique / Steps": "Warm-up effleurage; gentle joint mobilizations within comfort; surrounding muscle petrissage; heat only if cleared.",
+    "Massage Contraindication": "Acute inflamed joints\u2014avoid deep work and stretching; avoid end-range pain.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/osteoarthritis.png",
+    "Slug": "osteoarthritis"
+  },
+  {
+    "Condition": "Rheumatoid Arthritis",
+    "Definition": "Autoimmune inflammatory polyarthritis causing joint swelling and pain.",
+    "Best Massage Technique / Steps": "During remission: gentle Swedish, ROM within tolerance; lymphatic/light strokes during flare.",
+    "Massage Contraindication": "Active flare\u2014avoid deep pressure/heat; avoid inflamed joints; severe fatigue days defer.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/rheumatoid-arthritis.png",
+    "Slug": "rheumatoid-arthritis"
+  },
+  {
+    "Condition": "Fibromyalgia",
+    "Definition": "Chronic widespread pain with tender points, sleep disturbance, fatigue.",
+    "Best Massage Technique / Steps": "Very gentle pressure; slow rhythm; myofascial unwinding; short sessions; emphasize relaxation.",
+    "Massage Contraindication": "Avoid aggressive/deep work which can trigger flares; monitor post-session soreness.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/fibromyalgia.png",
+    "Slug": "fibromyalgia"
+  },
+  {
+    "Condition": "Chronic Fatigue Syndrome / ME",
+    "Definition": "Persistent, unexplained fatigue with post-exertional malaise and other symptoms.",
+    "Best Massage Technique / Steps": "Short, gentle sessions; soothing effleurage; lymphatic-style strokes; prioritize rest.",
+    "Massage Contraindication": "Avoid overstimulation; stop if dizziness or malaise; avoid long sessions.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/chronic-fatigue-syndrome-me.png",
+    "Slug": "chronic-fatigue-syndrome-me"
+  },
+  {
+    "Condition": "Sciatica",
+    "Definition": "Pain along sciatic nerve from lumbar or piriformis irritation.",
+    "Best Massage Technique / Steps": "Gluteal/piriformis release; hamstring work; lumbar paraspinals; nerve glide-friendly positions; heat if tolerated.",
+    "Massage Contraindication": "Progressive neuro deficits, severe unremitting pain\u2014refer; avoid direct pressure on nerve.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/sciatica.png",
+    "Slug": "sciatica"
+  },
+  {
+    "Condition": "Low Back Pain (Non-specific)",
+    "Definition": "Lumbar pain without specific serious pathology.",
+    "Best Massage Technique / Steps": "Myofascial release; QL/glute/hip flexor work; gentle mobilizations; breathing and core cueing.",
+    "Massage Contraindication": "Red flags (trauma, fever, cancer history, cauda equina symptoms) require referral.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/low-back-pain-non-specific.png",
+    "Slug": "low-back-pain-non-specific"
+  },
+  {
+    "Condition": "Herniated Disc (Lumbar)",
+    "Definition": "Nucleus pulposus protrusion causing nerve root irritation.",
+    "Best Massage Technique / Steps": "Gentle paraspinal work; avoid end-range flexion; side-lying; traction-inspired decompression positioning.",
+    "Massage Contraindication": "Worsening neuro signs, bowel/bladder changes\u2014urgent referral; avoid heavy pressure near spine.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/herniated-disc-lumbar.png",
+    "Slug": "herniated-disc-lumbar"
+  },
+  {
+    "Condition": "Scoliosis",
+    "Definition": "Lateral curvature of the spine with rotation.",
+    "Best Massage Technique / Steps": "Myofascial lengthening on concave side; strengthen cues for convex; breathing into ribcage; gentle mobilizations.",
+    "Massage Contraindication": "Severe pain, recent surgery without clearance; avoid forceful spinal manipulation.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/scoliosis.png",
+    "Slug": "scoliosis"
+  },
+  {
+    "Condition": "Kyphosis/Lordosis (Postural)",
+    "Definition": "Exaggerated thoracic kyphosis or lumbar lordosis due to posture.",
+    "Best Massage Technique / Steps": "Pectoral release, thoracic paraspinals, hip flexors/hamstrings balance; posture education.",
+    "Massage Contraindication": "Acute pain or structural instability\u2014work gently; avoid aggressive end-range.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/kyphosis-lordosis-postural.png",
+    "Slug": "kyphosis-lordosis-postural"
+  },
+  {
+    "Condition": "Neck Strain / Whiplash (Subacute)",
+    "Definition": "Soft-tissue injury to neck after acceleration-deceleration, subacute phase.",
+    "Best Massage Technique / Steps": "Very gentle effleurage; suboccipital release; pain-free ROM; avoid prone pressure early.",
+    "Massage Contraindication": "Acute trauma without medical clearance; neurological deficits; vertebral artery symptoms.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/neck-strain-whiplash-subacute.png",
+    "Slug": "neck-strain-whiplash-subacute"
+  },
+  {
+    "Condition": "TMJ Disorder",
+    "Definition": "Temporomandibular joint dysfunction causing jaw pain and tightness.",
+    "Best Massage Technique / Steps": "Masseter/temporalis release; intraoral if trained/consented; neck/upper back work; heat compress.",
+    "Massage Contraindication": "Active infection, dental abscess; avoid excessive intraoral pressure; gloves and consent required.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/tmj-disorder.png",
+    "Slug": "tmj-disorder"
+  },
+  {
+    "Condition": "Carpal Tunnel Syndrome",
+    "Definition": "Median nerve compression at wrist with numbness/tingling in hand.",
+    "Best Massage Technique / Steps": "Forearm flexor/extensor release; gentle wrist mobilizations; nerve-friendly glides.",
+    "Massage Contraindication": "Severe weakness or loss of function\u2014refer; avoid compressing carpal tunnel directly.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/carpal-tunnel-syndrome.png",
+    "Slug": "carpal-tunnel-syndrome"
+  },
+  {
+    "Condition": "Tendonitis (General)",
+    "Definition": "Inflammation/irritation of a tendon from overuse.",
+    "Best Massage Technique / Steps": "Cross-fiber friction (moderate); gentle lengthening; ice post-session if advised; gradual load advice.",
+    "Massage Contraindication": "Acute hot inflammation\u2014use very light or defer; avoid overly painful friction.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/tendonitis-general.png",
+    "Slug": "tendonitis-general"
+  },
+  {
+    "Condition": "Plantar Fasciitis",
+    "Definition": "Heel and sole pain from plantar fascia irritation.",
+    "Best Massage Technique / Steps": "Foot arch release; calf/soleus work; gentle stretches; ice bottle roll post care.",
+    "Massage Contraindication": "Acute tear suspicion\u2014refer; avoid heavy direct pressure on inflamed origin.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/plantar-fasciitis.png",
+    "Slug": "plantar-fasciitis"
+  },
+  {
+    "Condition": "Rotator Cuff Strain",
+    "Definition": "Injury to shoulder rotator cuff muscles/tendons.",
+    "Best Massage Technique / Steps": "Infraspinatus/subscapularis release; scapular mobilizations; pain-free ROM; posterior capsule work.",
+    "Massage Contraindication": "Acute tear or severe pain\u2014refer; avoid forced abduction or aggressive stretching.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/rotator-cuff-strain.png",
+    "Slug": "rotator-cuff-strain"
+  },
+  {
+    "Condition": "Tennis Elbow (Lateral Epicondylitis)",
+    "Definition": "Overuse of wrist extensors causing lateral elbow pain.",
+    "Best Massage Technique / Steps": "Cross-fiber friction to extensor tendons; forearm release; eccentric loading education.",
+    "Massage Contraindication": "Acute inflammation\u2014light only; avoid direct compression on nerve.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/tennis-elbow-lateral-epicondylitis.png",
+    "Slug": "tennis-elbow-lateral-epicondylitis"
+  },
+  {
+    "Condition": "Golfer\u2019s Elbow (Medial Epicondylitis)",
+    "Definition": "Overuse of wrist flexors causing medial elbow pain.",
+    "Best Massage Technique / Steps": "Cross-fiber friction; flexor/pronator release; gradual loading advice.",
+    "Massage Contraindication": "Acute hot inflammation\u2014gentle only; avoid ulnar nerve compression.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/golfer-s-elbow-medial-epicondylitis.png",
+    "Slug": "golfer-s-elbow-medial-epicondylitis"
+  },
+  {
+    "Condition": "De Quervain\u2019s Tenosynovitis",
+    "Definition": "Inflammation of tendons on thumb side of wrist.",
+    "Best Massage Technique / Steps": "Gentle friction and myofascial on APL/EPB; forearm release; splint-compatible care.",
+    "Massage Contraindication": "Acute severe pain\u2014limit to light strokes; avoid forceful stretching.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/de-quervain-s-tenosynovitis.png",
+    "Slug": "de-quervain-s-tenosynovitis"
+  },
+  {
+    "Condition": "Muscle Strain (Hamstring/General)",
+    "Definition": "Tear of muscle fibers causing pain and weakness.",
+    "Best Massage Technique / Steps": "Acute: lymphatic strokes; Subacute: gentle petrissage and pain-free stretching; remodeling: cross-fiber and strengthening cues.",
+    "Massage Contraindication": "Avoid deep work in acute phase; bruising/hematoma\u2014light only; suspect rupture\u2014refer.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/muscle-strain-hamstring-general.png",
+    "Slug": "muscle-strain-hamstring-general"
+  },
+  {
+    "Condition": "Muscle Sprain (Ligament)",
+    "Definition": "Stretch/tear of ligament supporting a joint.",
+    "Best Massage Technique / Steps": "Around but not on the ligament; edema management; later, cross-fiber to scar; proprioception cues.",
+    "Massage Contraindication": "Acute unstable sprain\u2014defer; avoid deep pressure on ligament; refer if severe swelling.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/muscle-sprain-ligament.png",
+    "Slug": "muscle-sprain-ligament"
+  },
+  {
+    "Condition": "Varicose Veins",
+    "Definition": "Dilated, tortuous superficial veins usually in legs.",
+    "Best Massage Technique / Steps": "Light strokes toward heart around veins; elevate legs; avoid direct pressure.",
+    "Massage Contraindication": "Do not massage directly over veins; screen for DVT signs (pain, heat, swelling)\u2014refer if present.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/varicose-veins.png",
+    "Slug": "varicose-veins"
+  },
+  {
+    "Condition": "Deep Vein Thrombosis (DVT) - Suspected/History",
+    "Definition": "Blood clot in deep vein, risk of embolism.",
+    "Best Massage Technique / Steps": "If suspected or active: NO massage; history with clearance: gentle distal/contralateral work only.",
+    "Massage Contraindication": "Absolute: suspected or confirmed DVT\u2014urgent medical care; avoid leg massage until cleared.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/deep-vein-thrombosis-dvt-suspected-history.png",
+    "Slug": "deep-vein-thrombosis-dvt-suspected-history"
+  },
+  {
+    "Condition": "Lymphedema",
+    "Definition": "Protein-rich fluid accumulation due to lymphatic obstruction.",
+    "Best Massage Technique / Steps": "Manual lymph drainage (MLD) by trained therapist; proximal-to-distal clearing sequences; compression follow-up.",
+    "Massage Contraindication": "Acute infection (cellulitis), uncontrolled heart failure, active cancer without guidance\u2014defer.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/lymphedema.png",
+    "Slug": "lymphedema"
+  },
+  {
+    "Condition": "Edema (General)",
+    "Definition": "Swelling from fluid accumulation of various causes.",
+    "Best Massage Technique / Steps": "Very light lymphatic strokes toward nodes; elevate; short sessions.",
+    "Massage Contraindication": "Heart/kidney failure, DVT, infection\u2014medical clearance needed.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/edema-general.png",
+    "Slug": "edema-general"
+  },
+  {
+    "Condition": "Heart Disease (Stable)",
+    "Definition": "Coronary or structural heart disease under medical management.",
+    "Best Massage Technique / Steps": "Gentle, calming full-body; avoid overloading; semi-reclined; monitor comfort.",
+    "Massage Contraindication": "Unstable angina, recent MI without clearance; avoid heavy chest/upper back pressure.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/heart-disease-stable.png",
+    "Slug": "heart-disease-stable"
+  },
+  {
+    "Condition": "Asthma",
+    "Definition": "Chronic airway inflammation with episodic bronchoconstriction.",
+    "Best Massage Technique / Steps": "Thoracic mobility; ribcage/diaphragm release; calm pacing; keep inhaler nearby.",
+    "Massage Contraindication": "Acute attack\u2014stop and assist; avoid prone face-down if breathing is difficult.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/asthma.png",
+    "Slug": "asthma"
+  },
+  {
+    "Condition": "COPD",
+    "Definition": "Chronic airflow limitation (emphysema/chronic bronchitis).",
+    "Best Massage Technique / Steps": "Gentle back/shoulders; posture work; avoid breath restriction; short sessions.",
+    "Massage Contraindication": "Severe dyspnea or oxygen desaturation\u2014stop; avoid heavy chest pressure.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/copd.png",
+    "Slug": "copd"
+  },
+  {
+    "Condition": "Upper Respiratory Infection (Cold/Flu)",
+    "Definition": "Acute viral infection of upper airways.",
+    "Best Massage Technique / Steps": "Defer until afebrile and recovering; when recovering, gentle drainage strokes and relaxation.",
+    "Massage Contraindication": "Fever, contagious period\u2014do not massage.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/upper-respiratory-infection-cold-flu.png",
+    "Slug": "upper-respiratory-infection-cold-flu"
+  },
+  {
+    "Condition": "COVID-19 (Post-acute)",
+    "Definition": "Infection by SARS-CoV-2; post-acute recovery phase.",
+    "Best Massage Technique / Steps": "Short, gentle sessions; breathing mechanics; gradual return; monitor fatigue.",
+    "Massage Contraindication": "Acute infection or long-COVID with red flags (clots, chest pain)\u2014medical guidance first.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/covid-19-post-acute.png",
+    "Slug": "covid-19-post-acute"
+  },
+  {
+    "Condition": "Skin Infection (Cellulitis/Impetigo)",
+    "Definition": "Bacterial skin infection with redness, warmth, tenderness.",
+    "Best Massage Technique / Steps": "No massage over infected area; refer for medical care.",
+    "Massage Contraindication": "Absolute over affected area; systemic symptoms\u2014defer entirely.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/skin-infection-cellulitis-impetigo.png",
+    "Slug": "skin-infection-cellulitis-impetigo"
+  },
+  {
+    "Condition": "Eczema / Dermatitis",
+    "Definition": "Inflammatory, itchy skin rash with variable triggers.",
+    "Best Massage Technique / Steps": "Use hypoallergenic oil; gentle strokes; avoid irritants; short nails/gloves if needed.",
+    "Massage Contraindication": "Avoid broken skin and active flare areas; avoid fragrances.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/eczema-dermatitis.png",
+    "Slug": "eczema-dermatitis"
+  },
+  {
+    "Condition": "Psoriasis",
+    "Definition": "Chronic autoimmune skin condition with plaques.",
+    "Best Massage Technique / Steps": "Gentle lotion-based work; avoid picking/irritation; treat surrounding muscles.",
+    "Massage Contraindication": "Avoid broken plaques; consider sensitivity to oils/lotions.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/psoriasis.png",
+    "Slug": "psoriasis"
+  },
+  {
+    "Condition": "Open Wounds / Burns (Healing)",
+    "Definition": "Tissue damage with impaired skin barrier.",
+    "Best Massage Technique / Steps": "No massage over wound; gentle work around area to manage tension; scar mobilization only when healed and cleared.",
+    "Massage Contraindication": "Open areas, infection, recent grafts\u2014defer.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/open-wounds-burns-healing.png",
+    "Slug": "open-wounds-burns-healing"
+  },
+  {
+    "Condition": "Recent Surgery (Post-op)",
+    "Definition": "Period following surgical procedure.",
+    "Best Massage Technique / Steps": "Only with medical clearance; gentle lymphatic strokes; later, scar mobilization; positioning for comfort.",
+    "Massage Contraindication": "No work over incision until healed; DVT risk; infection/fever\u2014defer.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/recent-surgery-post-op.png",
+    "Slug": "recent-surgery-post-op"
+  },
+  {
+    "Condition": "Fracture (Healing)",
+    "Definition": "Broken bone during immobilization/healing phase.",
+    "Best Massage Technique / Steps": "Indirect work proximal/distal; edema management; later, gentle ROM and scar work.",
+    "Massage Contraindication": "No pressure over fracture; suspect non-union or severe pain\u2014refer.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/fracture-healing.png",
+    "Slug": "fracture-healing"
+  },
+  {
+    "Condition": "Bruising / Hematoma",
+    "Definition": "Blood leakage into tissues after trauma.",
+    "Best Massage Technique / Steps": "Gentle lymphatic strokes; avoid direct pressure; support surrounding areas.",
+    "Massage Contraindication": "No deep pressure on bruise; monitor for anticoagulant use.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/bruising-hematoma.png",
+    "Slug": "bruising-hematoma"
+  },
+  {
+    "Condition": "Osteoporosis",
+    "Definition": "Low bone density increasing fracture risk.",
+    "Best Massage Technique / Steps": "Gentle pressure; supportive positioning; focus on posture muscles; avoid high-velocity maneuvers.",
+    "Massage Contraindication": "Avoid aggressive compression or end-range spinal movements.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/osteoporosis.png",
+    "Slug": "osteoporosis"
+  },
+  {
+    "Condition": "Ankylosing Spondylitis",
+    "Definition": "Inflammatory arthritis primarily affecting spine and SI joints.",
+    "Best Massage Technique / Steps": "Gentle myofascial; posture and breathing work; maintain mobility without force.",
+    "Massage Contraindication": "Acute inflammatory flare\u2014light only; avoid forceful spinal movements.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/ankylosing-spondylitis.png",
+    "Slug": "ankylosing-spondylitis"
+  },
+  {
+    "Condition": "Multiple Sclerosis (Stable)",
+    "Definition": "Autoimmune demyelinating disease with varied neurologic symptoms.",
+    "Best Massage Technique / Steps": "Gentle, cooling if heat-sensitive; short sessions; focus spasticity relief.",
+    "Massage Contraindication": "Acute relapse\u2014defer; avoid overheating and fatigue.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/multiple-sclerosis-stable.png",
+    "Slug": "multiple-sclerosis-stable"
+  },
+  {
+    "Condition": "Parkinson\u2019s Disease",
+    "Definition": "Neurodegenerative disorder with rigidity and tremor.",
+    "Best Massage Technique / Steps": "Rhythmic rocking; slow petrissage; joint mobilizations; cue breathing; adapt positioning.",
+    "Massage Contraindication": "Orthostatic hypotension risk; avoid sudden changes; monitor fatigue.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/parkinson-s-disease.png",
+    "Slug": "parkinson-s-disease"
+  },
+  {
+    "Condition": "History of Stroke (Stable)",
+    "Definition": "Past cerebrovascular event with residual deficits.",
+    "Best Massage Technique / Steps": "Gentle, slow work; lymphatic for edema; facilitate ROM; position to protect weak side.",
+    "Massage Contraindication": "Acute stroke symptoms\u2014medical emergency; be cautious with anticoagulants.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/history-of-stroke-stable.png",
+    "Slug": "history-of-stroke-stable"
+  },
+  {
+    "Condition": "Bleeding Disorders",
+    "Definition": "Conditions with impaired clotting (e.g., hemophilia).",
+    "Best Massage Technique / Steps": "Very gentle pressure; avoid deep tissue; compressive holds rather than kneading.",
+    "Massage Contraindication": "Avoid aggressive techniques; any unusual bruising\u2014stop and refer.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/bleeding-disorders.png",
+    "Slug": "bleeding-disorders"
+  },
+  {
+    "Condition": "Anticoagulant Therapy",
+    "Definition": "Use of blood thinners (e.g., warfarin, DOACs).",
+    "Best Massage Technique / Steps": "Light-to-moderate pressure; avoid deep tissue and strong friction; monitor bruising.",
+    "Massage Contraindication": "Avoid percussive tools and strong pressure; caution with stretching.",
+    "Image URL": "https://your-supabase-url/storage/v1/object/public/massage/anticoagulant-therapy.png",
+    "Slug": "anticoagulant-therapy"
+  }
+];
+
+const results = document.getElementById('results');
+const searchBox = document.getElementById('searchBox');
+const clearBtn = document.getElementById('clearBtn');
+const modal = document.getElementById('modal');
+const closeModal = document.getElementById('closeModal');
+const mImg = document.getElementById('mImg');
+const mTitle = document.getElementById('mTitle');
+const mDef = document.getElementById('mDef');
+const mTech = document.getElementById('mTech');
+const mContra = document.getElementById('mContra');
+const pdfBtn = document.getElementById('pdfBtn');
+
+function cardHTML(item){
+  return `<div class="bg-white border rounded-xl shadow-sm p-4 hover:shadow transition cursor-pointer" data-cond="${item.Condition}">
+    <div class="flex gap-3 items-center">
+      <img src="${item['Image URL']}" class="w-16 h-16 object-contain bg-gray-50 rounded" onerror="this.src='https://via.placeholder.com/64?text=Img';"/>
+      <div>
+        <h3 class="font-semibold">${item.Condition}</h3>
+        <p class="text-xs text-gray-600">${item.Definition}</p>
+      </div>
+    </div>
+  </div>`;
+}
+
+function render(list){
+  results.innerHTML = list.map(cardHTML).join('');
+  [...results.children].forEach(card => {
+    card.addEventListener('click', () => {
+      const name = card.getAttribute('data-cond');
+      const item = data.find(d => d.Condition === name);
+      if(!item) return;
+      mTitle.textContent = item.Condition;
+      mDef.textContent = item.Definition;
+      mTech.textContent = item["Best Massage Technique / Steps"];
+      mContra.textContent = item["Massage Contraindication"];
+      mImg.src = item["Image URL"];
+      modal.classList.add('active');
+    });
+  });
+}
+
+function filter(){
+  const q = searchBox.value.toLowerCase().trim();
+  if(!q) return render(data);
+  const list = data.filter(d =>
+    d.Condition.toLowerCase().includes(q) ||
+    d.Definition.toLowerCase().includes(q));
+  render(list);
+}
+
+searchBox.addEventListener('input', filter);
+clearBtn.addEventListener('click', () => { searchBox.value=''; filter(); });
+closeModal.addEventListener('click', () => modal.classList.remove('active'));
+modal.addEventListener('click', (e)=>{ if(e.target===modal) modal.classList.remove('active'); });
+
+pdfBtn.addEventListener('click', () => {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const title = mTitle.textContent;
+  doc.setFontSize(16);
+  doc.text(title, 10, 20);
+  doc.setFontSize(12);
+  let y = 35;
+  doc.text("Definition:", 10, y); y+=7;
+  const defLines = doc.splitTextToSize(mDef.textContent, 180);
+  doc.text(defLines, 10, y); y += defLines.length*6 + 6;
+  doc.text("Best Massage Technique / Steps:", 10, y); y+=7;
+  const techLines = doc.splitTextToSize(mTech.textContent, 180);
+  doc.text(techLines, 10, y); y += techLines.length*6 + 6;
+  doc.text("Contraindications:", 10, y); y+=7;
+  const contraLines = doc.splitTextToSize(mContra.textContent, 180);
+  doc.text(contraLines, 10, y);
+  doc.save(`${title}.pdf`);
+});
+
+render(data);
+</script>
+
+<!-- Disclaimer -->
+<div class="max-w-5xl mx-auto px-6 pb-10 text-xs text-gray-500">
+  <p><strong>Disclaimer:</strong> This guide is for educational use by massage professionals. It does not replace medical advice. Defer massage and refer to a healthcare provider whenever red flags or uncertainty are present.</p>
+</div>
+</body>
+</html>
