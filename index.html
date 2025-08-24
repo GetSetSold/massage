@@ -1,156 +1,95 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Massage Conditions Database</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background: #f9fafc;
-      color: #222;
-    }
-    header {
-      background: #1a3454;
-      color: #fff;
-      padding: 1rem;
-      text-align: center;
-    }
-    .search-bar {
-      margin: 1rem auto;
-      max-width: 500px;
-      display: flex;
-      justify-content: center;
-    }
-    .search-bar input {
-      width: 100%;
-      padding: 0.75rem;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 1rem;
-    }
-    .results {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1rem;
-      padding: 1rem;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-    .card {
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      padding: 1rem;
-      display: flex;
-      flex-direction: column;
-    }
-    .card img {
-      max-width: 100%;
-      border-radius: 8px;
-      margin-bottom: 0.75rem;
-    }
-    .card h3 {
-      margin: 0 0 0.5rem 0;
-      font-size: 1.25rem;
-      color: #1a3454;
-    }
-    .card p {
-      margin: 0.25rem 0;
-      font-size: 0.9rem;
-      line-height: 1.4;
-    }
-    .btn {
-      margin-top: auto;
-      display: inline-block;
-      background: #ff0000;
-      color: #fff;
-      padding: 0.5rem 1rem;
-      border-radius: 6px;
-      text-decoration: none;
-      text-align: center;
-      font-size: 0.9rem;
-      transition: background 0.2s;
-    }
-    .btn:hover {
-      background: #cc0000;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Massage Conditions Database</title>
+<style>
+  body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f9fafc; color:#222; }
+  header { background:#1a3454; color:#fff; padding:1rem; text-align:center; }
+  .search-bar { margin:1rem auto; max-width:500px; display:flex; justify-content:center; }
+  .search-bar input { width:100%; padding:0.75rem; border:1px solid #ccc; border-radius:8px; font-size:1rem; }
+  .results { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px,1fr)); gap:1rem; padding:1rem; max-width:1200px; margin:0 auto; }
+  .card { background:#fff; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.1); padding:1rem; display:flex; flex-direction:column; }
+  .card img { max-width:100%; border-radius:8px; margin-bottom:0.75rem; }
+  .card h3 { margin:0 0 0.5rem 0; font-size:1.25rem; color:#1a3454; }
+  .card p { margin:0.25rem 0; font-size:0.9rem; line-height:1.4; }
+  .btn { margin-top:auto; display:inline-block; background:#ff0000; color:#fff; padding:0.5rem 1rem; border-radius:6px; text-decoration:none; text-align:center; font-size:0.9rem; cursor:pointer; }
+  .btn:hover { background:#cc0000; }
+</style>
 </head>
 <body>
-  <header>
-    <h1>Massage Conditions Database</h1>
-    <p>Search conditions, techniques, and contraindications</p>
-  </header>
+<header>
+  <h1>Massage Conditions Database</h1>
+  <p>Search conditions, techniques, and contraindications</p>
+</header>
 
-  <div class="search-bar">
-    <input type="text" id="searchInput" placeholder="Search condition (e.g., Diabetes, High Blood Pressure)" />
-  </div>
+<div class="search-bar">
+  <input type="text" id="searchInput" placeholder="Search condition (e.g., Diabetes, High Blood Pressure)">
+</div>
 
-  <div class="results" id="results"></div>
+<div class="results" id="results"></div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script>
-    const SUPABASE_URL = 'https://nkjxlwuextxzpeohutxz.supabase.co/rest/v1';
-    const SUPABASE_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ranhsd3VleHR4enBlb2h1dHh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzIzMTI5MDQsImV4cCI6MjA0Nzg4ODkwNH0.S3qHT3l4FDV5T0uPI8q4SDo6O-87ApDILE2OTsWLg_0';
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+// Fetch local JSON file from the same repo
+async function fetchConditions() {
+  const res = await fetch('./massage_conditions.json');
+  return res.json();
+}
 
-    async function fetchConditions() {
-      const res = await fetch(`${SUPABASE_URL}/massage?select=*`, {
-        headers: { apikey: SUPABASE_API_KEY, Authorization: `Bearer ${SUPABASE_API_KEY}` }
-      });
-      return res.json();
-    }
+// Render a card
+function renderCard(cond) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `
+    <img src="${cond['Image URL'] || 'https://via.placeholder.com/400x200?text=No+Image'}" alt="${cond.Condition}">
+    <h3>${cond.Condition}</h3>
+    <p><strong>Definition:</strong> ${cond.Definition || 'N/A'}</p>
+    <p><strong>Best Technique:</strong> ${cond['Best Massage Technique / Steps'] || 'N/A'}</p>
+    <p><strong>Contraindications:</strong> ${cond['Massage Contraindication'] || 'N/A'}</p>
+    <button class="btn" onclick="downloadPDF('${cond.Condition}', '${cond.Definition}', '${cond['Best Massage Technique / Steps']}', '${cond['Massage Contraindication']}')">Download PDF</button>
+  `;
+  return card;
+}
 
-    function renderCard(cond) {
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.innerHTML = `
-        <img src="${cond.image_url || 'https://via.placeholder.com/400x200?text=No+Image'}" alt="${cond.condition}" />
-        <h3>${cond.condition}</h3>
-        <p><strong>Definition:</strong> ${cond.definition || 'N/A'}</p>
-        <p><strong>Best Technique:</strong> ${cond.best_technique || 'N/A'}</p>
-        <p><strong>Contraindications:</strong> ${cond.contraindication || 'N/A'}</p>
-        <a href="#" class="btn" onclick="downloadPDF('${cond.condition}', '${cond.definition}', '${cond.best_technique}', '${cond.contraindication}')">Download PDF</a>
-      `;
-      return card;
-    }
+// Render all and handle search
+async function renderAll() {
+  const resultsEl = document.getElementById('results');
+  let conditions = await fetchConditions();
 
-    async function renderAll() {
-      const resultsEl = document.getElementById('results');
-      let conditions = await fetchConditions();
+  function display(list) {
+    resultsEl.innerHTML = '';
+    list.forEach(c => resultsEl.appendChild(renderCard(c)));
+  }
 
-      function display(list) {
-        resultsEl.innerHTML = '';
-        list.forEach(cond => resultsEl.appendChild(renderCard(cond)));
-      }
+  display(conditions);
 
-      display(conditions);
+  document.getElementById('searchInput').addEventListener('input', e => {
+    const q = e.target.value.toLowerCase();
+    const filtered = conditions.filter(c => c.Condition.toLowerCase().includes(q));
+    display(filtered);
+  });
+}
 
-      document.getElementById('searchInput').addEventListener('input', e => {
-        const q = e.target.value.toLowerCase();
-        const filtered = conditions.filter(c => c.condition.toLowerCase().includes(q));
-        display(filtered);
-      });
-    }
+// PDF download function
+function downloadPDF(condition, definition, technique, contraindication) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.setFontSize(16);
+  doc.text(condition, 10, 20);
+  doc.setFontSize(12);
+  doc.text("Definition:", 10, 35);
+  doc.text(doc.splitTextToSize(definition, 180), 10, 42);
+  doc.text("Best Technique:", 10, 70);
+  doc.text(doc.splitTextToSize(technique, 180), 10, 77);
+  doc.text("Contraindications:", 10, 105);
+  doc.text(doc.splitTextToSize(contraindication, 180), 10, 112);
+  doc.save(`${condition}.pdf`);
+}
 
-    function downloadPDF(condition, definition, technique, contraindication) {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      doc.setFontSize(16);
-      doc.text(condition, 10, 20);
-      doc.setFontSize(12);
-      doc.text("Definition:", 10, 35);
-      doc.text(doc.splitTextToSize(definition, 180), 10, 42);
-      doc.text("Best Technique:", 10, 70);
-      doc.text(doc.splitTextToSize(technique, 180), 10, 77);
-      doc.text("Contraindications:", 10, 105);
-      doc.text(doc.splitTextToSize(contraindication, 180), 10, 112);
-      doc.save(`${condition}.pdf`);
-    }
-
-    renderAll();
-  </script>
+// Initialize
+renderAll();
+</script>
 </body>
 </html>
