@@ -8,10 +8,10 @@
   body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f9fafc; color:#222; }
   header { background:#1a3454; color:#fff; padding:1rem; text-align:center; }
   .search-bar { margin:1rem auto; max-width:500px; display:flex; justify-content:center; }
-  .search-bar input { width:100%; padding:0.75rem; border:1px solid #ccc; border-radius:8px; font-size:1rem; }
+  .search-bar select { width:100%; padding:0.75rem; border:1px solid #ccc; border-radius:8px; font-size:1rem; }
   .results { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px,1fr)); gap:1rem; padding:1rem; max-width:1200px; margin:0 auto; }
   .card { background:#fff; border-radius:12px; box-shadow:0 4px 10px rgba(0,0,0,0.1); padding:1rem; display:flex; flex-direction:column; }
-  .card img { max-width:100%; border-radius:8px; margin-bottom:0.75rem; }
+  .card img { max-width:100%; border-radius:8px; margin-bottom:0.75rem; object-fit:cover; height:180px; }
   .card h3 { margin:0 0 0.5rem 0; font-size:1.25rem; color:#1a3454; }
   .card p { margin:0.25rem 0; font-size:0.9rem; line-height:1.4; }
   .btn { margin-top:auto; display:inline-block; background:#ff0000; color:#fff; padding:0.5rem 1rem; border-radius:6px; text-decoration:none; text-align:center; font-size:0.9rem; cursor:pointer; }
@@ -25,7 +25,9 @@
 </header>
 
 <div class="search-bar">
-  <input type="text" id="searchInput" placeholder="Search condition (e.g., Diabetes, High Blood Pressure)">
+  <select id="searchDropdown">
+    <option value="">-- Select a Condition --</option>
+  </select>
 </div>
 
 <div class="results" id="results"></div>
@@ -46,6 +48,7 @@ async function fetchConditions() {
   return res.json();
 }
 
+// Render a card
 function renderCard(cond) {
   const card = document.createElement('div');
   card.className = 'card';
@@ -60,24 +63,38 @@ function renderCard(cond) {
   return card;
 }
 
+// Render all cards and populate dropdown
 async function renderAll() {
   const resultsEl = document.getElementById('results');
+  const dropdown = document.getElementById('searchDropdown');
+
   let conditions = await fetchConditions();
 
-  function display(list) {
+  // Populate dropdown
+  conditions.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.condition;
+    opt.textContent = c.condition;
+    dropdown.appendChild(opt);
+  });
+
+  // Display all cards initially
+  displayCards(conditions);
+
+  // Filter cards when dropdown changes
+  dropdown.addEventListener('change', e => {
+    const value = e.target.value;
+    const filtered = value ? conditions.filter(c => c.condition === value) : conditions;
+    displayCards(filtered);
+  });
+
+  function displayCards(list) {
     resultsEl.innerHTML = '';
     list.forEach(c => resultsEl.appendChild(renderCard(c)));
   }
-
-  display(conditions);
-
-  document.getElementById('searchInput').addEventListener('input', e => {
-    const q = e.target.value.toLowerCase();
-    const filtered = conditions.filter(c => c.condition.toLowerCase().includes(q));
-    display(filtered);
-  });
 }
 
+// PDF download function
 function downloadPDF(condition, definition, technique, contraindication) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
@@ -93,7 +110,9 @@ function downloadPDF(condition, definition, technique, contraindication) {
   doc.save(`${condition}.pdf`);
 }
 
+// Initialize
 renderAll();
 </script>
 </body>
 </html>
+
