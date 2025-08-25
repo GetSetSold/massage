@@ -12,8 +12,8 @@
     padding: 0;
     height: 100vh;
     overflow: hidden;
-    
   }
+
   header {
     position: sticky;
     top: 0;
@@ -23,6 +23,7 @@
     display: flex;
     justify-content: center;
   }
+
   header select {
     padding: 10px;
     border-radius: 6px;
@@ -31,6 +32,7 @@
     width: 80%;
     max-width: 400px;
   }
+
   h1 {
     text-align: center;
     padding: 10px;
@@ -45,10 +47,12 @@
     gap: 16px;
     padding: 20px;
   }
+
   .single-card-view {
     display: flex !important;
     justify-content: center;
   }
+
   .single-card-view .card {
     width: 30%;
     min-width: 250px;
@@ -61,19 +65,19 @@
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     display: flex;
     flex-direction: column;
-    height: 100%;
   }
+
   .card img {
     width: 100%;
     object-fit: cover;
   }
+
   .card-content {
     padding: 10px;
     display: flex;
     flex-direction: column;
-    flex: 1;
-    overflow: hidden;
   }
+
   .card h2 {
     font-size: 16px;
     color: #fff;
@@ -82,6 +86,7 @@
     background: #cc0000;
     padding: 10px;
   }
+
   .section-title {
     font-weight: 600;
     border-bottom: 2px solid #cee0f3;
@@ -89,57 +94,73 @@
     padding-bottom: 2px;
     color: #1a3454;
   }
+
   .list-item {
     padding: 4px;
-    flex-shrink: 0;
   }
+
   .list-item:nth-child(odd) { background: #f3f6fa; }
   .list-item:nth-child(even) { background: #e9eff6; }
 
- @media (max-width: 768px) {
-  .grid { display: none; }
-  #mobileCardContainer { 
-    height: calc(100vh - 100px); /* header + navButtons height approx */
-    overflow: hidden;
-    padding: 10px;
-    box-sizing: border-box;
+  /* Mobile single card view */
+  @media (max-width: 768px) {
+    .grid { display: none; }
+
+    #mobileCardContainer { 
+      height: 90vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+
+    .card {
+      height: 100%;
+      width: 95%;
+      display: flex;
+      flex-direction: column;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .card img {
+      height: 35%; /* reduce image size */
+      object-fit: cover;
+      border-radius: 10px 10px 0 0;
+    }
+
+    .card-content {
+      height: 65%;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto; /* scroll if content too long */
+    }
+
+    #navButtons {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 20px;
+      background: #f9fafb;
+      box-shadow: 0 -2px 6px rgba(0,0,0,0.1);
+      box-sizing: border-box;
+      z-index: 1000;
+    }
+
+    #navButtons button {
+      padding: 10px 20px;
+      background: #1a3454;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+    }
   }
-  .card {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-  }
-  .card img {
-    height: 40%;
-    object-fit: cover;
-  }
-  .card-content {
-    height: 60%;
-    overflow-y: auto; /* content scrolls inside card */
-    padding: 10px;
-  }
-  #navButtons {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    padding: 10px 20px;
-    background: #f9fafb;
-    box-shadow: 0 -2px 6px rgba(0,0,0,0.1);
-    box-sizing: border-box;
-    z-index: 1000;
-  }
-  #navButtons button {
-    padding: 10px 20px;
-    background: #1a3454;
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    font-size: 16px;
-  }
-}
 
   @media (min-width: 769px) {
     #mobileCardContainer, #navButtons { display: none; }
@@ -230,6 +251,7 @@ document.getElementById('prevBtn').addEventListener('click', () => {
   if (mobileIndex > 0) mobileIndex--;
   showMobileCard();
 });
+
 document.getElementById('nextBtn').addEventListener('click', () => {
   if (mobileIndex < mobileData.length - 1) mobileIndex++;
   showMobileCard();
@@ -245,7 +267,6 @@ async function init() {
   renderCards(data);
 
   select.addEventListener('change', e => renderCards(data, e.target.value));
-
   window.addEventListener('resize', () => renderCards(data, select.value));
 }
 
