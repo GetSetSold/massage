@@ -41,6 +41,15 @@
       gap: 16px;
       padding: 20px;
     }
+    /* Single card centered */
+    .single-card-view {
+      display: flex !important;
+      justify-content: center;
+    }
+    .single-card-view .card {
+      width: 30%;
+      min-width: 250px;
+    }
     /* Card style */
     .card {
       background: #fff;
@@ -49,14 +58,12 @@
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      
     }
     .card img {
       width: 100%;
       height: 220px;
-      object-fit: ;
+      object-fit: cover; /* flush top & fill */
       display: block;
-      
     }
     .card-content {
       padding: 15px;
@@ -119,7 +126,7 @@
 
   .swiper-slide .card img {
     width: 100%;
-    height: 330px;
+    height: 320px;
     object-fit: fit;
     display: block;
   }
@@ -197,6 +204,16 @@
         swiperWrap.innerHTML += `<div class="swiper-slide">${cardHTML}</div>`;
       });
 
+      // Desktop single-card view
+      if (window.innerWidth > 768) {
+        if (filtered.length === 1) {
+          grid.classList.add('single-card-view');
+        } else {
+          grid.classList.remove('single-card-view');
+        }
+      }
+
+      // Mobile Swiper
       if (window.swiper) window.swiper.destroy(true, true);
       window.swiper = new Swiper('.swiper', {
         slidesPerView: 1,
@@ -222,6 +239,11 @@
 
       select.addEventListener('change', e => {
         renderCards(data, e.target.value);
+      });
+
+      // Recenter single card on window resize
+      window.addEventListener('resize', () => {
+        renderCards(data, select.value);
       });
     }
 
