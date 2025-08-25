@@ -6,11 +6,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
+  :root{
+    --navy:#1a3454;
+    --red:#cc0000;
+    --light:#f9fafb;
+    --line:#cee0f3;
+  }
   body {
     font-family: Poppins, Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background: #f9fafb;
+    background: var(--light);
     text-transform: capitalize;
   }
 
@@ -18,36 +24,30 @@
   header {
     position: sticky;
     top: 0;
-    background: #1a3454;
-    padding: 15px;
+    background: var(--navy);
+    padding: 10px;
     z-index: 100;
     display: flex;
+    gap: 10px;
     justify-content: center;
-    padding-top: 5px;
-    
   }
-
-  header select {
+  header select, header button {
     padding: 10px;
     border-radius: 6px;
     border: none;
     font-size: 16px;
-    width: 70%;
-    max-width: 300px;
-    margin-bottom: 10px;
   }
+  header select { width: 70%; max-width: 300px; }
+  header button { background: var(--red); color:#fff; cursor:pointer; }
 
-  
-    h1 {
+  h1 {
     text-align: center;
     padding: 10px;
     color: #fff;
     margin: 0;
-    background: #1a3454;
+    background: var(--navy);
     font-size: 25px;
     margin-bottom: -10px;
-   
-
   }
 
   /* Desktop grid */
@@ -58,16 +58,8 @@
     padding: 20px;
   }
 
-  .single-card-view {
-    display: flex !important;
-    justify-content: center;
-  }
-  
-  .single-card-view .card {
-    width: 30%;
-    min-width: 250px;
-  }
-
+  .single-card-view { display: flex !important; justify-content: center; }
+  .single-card-view .card { width: 30%; min-width: 250px; }
 
   .card {
     background: #fff;
@@ -76,118 +68,116 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    width: 100%; /* Ensures full width inside container */
+    width: 100%;
     box-sizing: border-box;
   }
-
-  .card img {
-    width: 100%;
-    object-fit: fit;
-    height: 220px;
-  }
-
-  .card-content {
-    padding: 15px;
-    display: flex;
-    flex-direction: column;
-  }
-
+  .card img { width: 100%; object-fit: cover; height: 200px; }
+  .card-content { padding: 15px; display:flex; flex-direction:column; }
   .card h2 {
     font-size: 16px;
     color: #fff;
     margin: 0 0 8px 0;
-    background: #cc0000;
+    background: var(--red);
     padding: 10px;
   }
-
   .section-title {
     font-weight: 600;
-    border-bottom: 2px solid #cee0f3;
+    border-bottom: 2px solid var(--line);
     margin: 8px 0 4px;
     padding-bottom: 2px;
-    color: #1a3454;
+    color: var(--navy);
   }
-
-  .list-item {
-    padding: 4px;
-  }
-
+  .list-item { padding: 4px; }
   .list-item:nth-child(odd) { background: #f3f6fa; }
   .list-item:nth-child(even) { background: #e9eff6; }
 
   /* Mobile single card view */
   @media (max-width: 768px) {
-    .grid {
-      display: none;
-      padding: 0;
-    }
-
+    .grid { display: none; padding: 0; }
     #mobileCardContainer {
-      height: calc(100vh - 120px); /* header + navButtons height */
+      height: calc(100vh - 120px);
       overflow-y: auto;
       box-sizing: border-box;
       width: 100%;
       max-width: 768px;
-      
       padding: 20px;
-      
       padding-bottom: 100px;
-
-      /* Hide scrollbar */
       -ms-overflow-style: none;
       scrollbar-width: none;
     }
-
-    #mobileCardContainer::-webkit-scrollbar {
-      display: none;
-    }
-
-    .card img {
-      height: 100%;
-      object-fit: fit;
-    }
-
-    .card-content {
-      height: 100%;
-    }
+    #mobileCardContainer::-webkit-scrollbar { display: none; }
+    .card img { height: 100%; object-fit: cover; }
+    .card-content { height: 100%; }
 
     #navButtons {
-  position: fixed;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 768px;
-
-  display: flex;
-  justify-content: center;  /* 👈 Center buttons as a group */
-  padding: 10px 0;
-  background: #f9fafb;
-  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-}
-
-#navButtons button {
-  padding: 10px 20px;
-  background: #1a3454;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  font-size: 16px;
-  margin: 0 5px;  /* 👈 Add equal spacing between buttons */
-}
-
-
+      position: fixed;
+      bottom: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 100%; max-width: 768px;
+      display: flex; justify-content: center;
+      padding: 10px 0; background: var(--light);
+      box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+    }
+    #navButtons button {
+      padding: 10px 20px;
+      background: var(--navy);
+      color: #fff; border: none; border-radius: 6px;
+      font-size: 16px; margin: 0 5px;
+    }
+  }
   @media (min-width: 769px) {
-    #mobileCardContainer,
-    #navButtons {
-      display: none;
+    #mobileCardContainer, #navButtons { display: none; }
+  }
+
+  /* Modal */
+  .modal {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6);
+    justify-content: center; align-items: center; z-index: 2000;
+  }
+  .modal-content {
+    background: #fff; padding: 20px; border-radius: 10px;
+    width: 90%; max-width: 560px; max-height: 80vh; overflow-y: auto;
+  }
+  .modal-header { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .modal-content h3 { margin: 0 0 10px 0; }
+  .modal-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+  .modal-content button {
+    padding: 10px 14px; background: var(--navy); color:#fff; border:none; border-radius:6px; cursor:pointer;
+  }
+  .option-list label { display:block; margin:4px 0; }
+
+  /* PRINT: exact 4-up layout */
+  @page { margin: 0.5in; }
+  @media print {
+    body * { visibility: hidden; }
+    #printArea, #printArea * { visibility: visible; }
+    #printArea { position: absolute; left: 0; top: 0; width: 100%; }
+
+    /* Each physical page contains a fixed 2x2 grid */
+    .print-page {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 12px;
+      page-break-after: always;
+      height: calc(100vh - 1in); /* account for @page margin */
+      box-sizing: border-box;
+    }
+    .print-page:last-child { page-break-after: auto; }
+
+    /* Cards scale to a quadrant */
+    .card { height: 100%; page-break-inside: avoid; }
+    .card img { height: 40%; object-fit: cover; }
+
+    /* Visually tame links/buttons etc. */
+    .modal, header, h1, #mobileCardContainer, #navButtons, .grid { display:none !important; }
+    .print-placeholder {
+      border: 1px dashed #e5e7eb; border-radius: 10px;
     }
   }
 </style>
-
-
-
 </head>
 <body>
 
@@ -197,6 +187,7 @@
   <select id="conditionSelect">
     <option value="all">All Conditions</option>
   </select>
+  <button id="openPrintModal">Print</button>
 </header>
 
 <!-- Desktop Grid -->
@@ -209,13 +200,37 @@
   <button id="nextBtn">Next</button>
 </div>
 
+<!-- Print container (hidden on screen) -->
+<div id="printArea" style="display:none;"></div>
+
+<!-- Print selection modal -->
+<div class="modal" id="printModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Select Conditions to Print</h3>
+      <input id="modalSearch" type="text" placeholder="Search…" style="flex:1; padding:8px 10px; border:1px solid #e5e7eb; border-radius:6px;">
+    </div>
+    <div style="margin:6px 0 10px;">
+      <label><input type="checkbox" id="toggleAll"> Select / Deselect All</label>
+    </div>
+    <div id="modalOptions" class="option-list"></div>
+    <div class="modal-actions">
+      <button id="printSelectedBtn">Print Selected</button>
+      <button id="printAllBtn" style="background:#cc0000;">Print All</button>
+      <button type="button" id="closeModalBtn" style="background:#6b7280;">Close</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const SUPABASE_URL = 'https://nkjxlwuextxzpeohutxz.supabase.co/rest/v1';
-    const SUPABASE_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ranhsd3VleHR4enBlb2h1dHh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzIzMTI5MDQsImV4cCI6MjA0Nzg4ODkwNH0.S3qHT3l4FDV5T0uPI8q4SDo6O-87ApDILE2OTsWLg_0';
+const SUPABASE_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ranhsd3VleHR4enBlb2h1dHh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzIzMTI5MDQsImV4cCI6MjA0Nzg4ODkwNH0.S3qHT3l4FDV5T0uPI8q4SDo6O-87ApDILE2OTsWLg_0';
 
+let allData = [];
 let mobileData = [];
 let mobileIndex = 0;
 
+/* ---------- Data ---------- */
 async function fetchConditions() {
   const res = await fetch(`${SUPABASE_URL}/massage?select=*`, {
     headers: { apikey: SUPABASE_API_KEY, Authorization: `Bearer ${SUPABASE_API_KEY}` }
@@ -223,6 +238,7 @@ async function fetchConditions() {
   return await res.json();
 }
 
+/* ---------- Render helpers ---------- */
 function renderList(text) {
   if (!text) return '<div class="list-item">N/A</div>';
   return text.split(';').map(item => `<div class="list-item">${item.trim()}</div>`).join('');
@@ -249,7 +265,7 @@ function renderCards(data, filter = "all", resetIndex = true) {
   const grid = document.getElementById('cardContainer');
   grid.innerHTML = '';
   const filtered = filter === "all" ? data : data.filter(d => d.condition === filter);
-  filtered.forEach(d => grid.innerHTML += renderCardHTML(d));
+  filtered.forEach(d => grid.insertAdjacentHTML('beforeend', renderCardHTML(d)));
 
   if (window.innerWidth <= 768) {
     mobileData = filtered;
@@ -262,14 +278,14 @@ function renderCards(data, filter = "all", resetIndex = true) {
 
 function showMobileCard() {
   const container = document.getElementById('mobileCardContainer');
-  if (mobileData.length === 0) {
-    container.innerHTML = '<p>No conditions found</p>';
+  if (!mobileData || mobileData.length === 0) {
+    container.innerHTML = '<p style="padding:20px;">No conditions found</p>';
     return;
   }
   container.innerHTML = renderCardHTML(mobileData[mobileIndex]);
 }
 
-// Mobile navigation buttons
+/* ---------- Mobile nav ---------- */
 document.getElementById('prevBtn').addEventListener('click', () => {
   if (mobileIndex > 0) mobileIndex--;
   showMobileCard();
@@ -279,27 +295,101 @@ document.getElementById('nextBtn').addEventListener('click', () => {
   showMobileCard();
 });
 
+/* ---------- Print: build strict 4-up pages ---------- */
+function chunkIntoPages(items, size=4) {
+  const pages = [];
+  for (let i = 0; i < items.length; i += size) pages.push(items.slice(i, i + size));
+  return pages;
+}
+
+function buildPrintHTML(dataArr) {
+  // Always fill each page to 4 slots with placeholders
+  const pages = chunkIntoPages(dataArr, 4);
+  return pages.map(group => {
+    const filled = [...group];
+    while (filled.length < 4) filled.push({ __placeholder: true });
+    const slots = filled.map(d => d.__placeholder
+      ? `<div class="print-placeholder"></div>`
+      : renderCardHTML(d)
+    ).join('');
+    return `<section class="print-page">${slots}</section>`;
+  }).join('');
+}
+
+function openModal() {
+  const modal = document.getElementById('printModal');
+  const list = document.getElementById('modalOptions');
+  list.innerHTML = '';
+  // Use index values to avoid quoting issues
+  allData.forEach((d, i) => {
+    list.insertAdjacentHTML('beforeend', `
+      <label>
+        <input type="checkbox" value="${i}">
+        ${d.condition}
+      </label>
+    `);
+  });
+  document.getElementById('toggleAll').checked = false;
+  document.getElementById('modalSearch').value = '';
+  modal.style.display = 'flex';
+}
+function closeModal() { document.getElementById('printModal').style.display = 'none'; }
+
+function doPrintFor(dataArr) {
+  const printArea = document.getElementById('printArea');
+  printArea.innerHTML = buildPrintHTML(dataArr);
+  printArea.style.display = 'block';
+  window.print();
+  printArea.style.display = 'none';
+}
+
+/* ---------- Modal events ---------- */
+document.getElementById('openPrintModal').addEventListener('click', openModal);
+document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+document.getElementById('printAllBtn').addEventListener('click', () => {
+  doPrintFor(allData);
+  closeModal();
+});
+document.getElementById('printSelectedBtn').addEventListener('click', () => {
+  const checked = [...document.querySelectorAll('#modalOptions input[type="checkbox"]:checked')];
+  if (checked.length === 0) { alert('No conditions selected!'); return; }
+  const selected = checked.map(cb => allData[parseInt(cb.value, 10)]);
+  doPrintFor(selected);
+  closeModal();
+});
+document.getElementById('toggleAll').addEventListener('change', (e) => {
+  const state = e.target.checked;
+  document.querySelectorAll('#modalOptions input[type="checkbox"]').forEach(cb => cb.checked = state);
+});
+document.getElementById('modalSearch').addEventListener('input', (e) => {
+  const term = e.target.value.toLowerCase();
+  document.querySelectorAll('#modalOptions label').forEach(lab => {
+    const txt = lab.textContent.toLowerCase();
+    lab.style.display = txt.includes(term) ? 'block' : 'none';
+  });
+});
+
+/* ---------- Init & resize ---------- */
 async function init() {
-  const data = await fetchConditions();
-  data.sort((a,b)=>a.condition.localeCompare(b.condition));
+  allData = await fetchConditions();
+  allData.sort((a,b)=>a.condition.localeCompare(b.condition));
 
   const select = document.getElementById('conditionSelect');
-  data.forEach(d => select.innerHTML += `<option value="${d.condition}">${d.condition}</option>`);
+  allData.forEach(d => select.insertAdjacentHTML('beforeend', `<option value="${d.condition}">${d.condition}</option>`));
+  renderCards(allData);
 
-  renderCards(data);
+  select.addEventListener('change', e => renderCards(allData, e.target.value, true));
 
-  select.addEventListener('change', e => renderCards(data, e.target.value, true));
-
-  // On window resize, just re-render current mobile card or desktop grid
   window.addEventListener('resize', () => {
+    const currentFilter = document.getElementById('conditionSelect').value;
     if (window.innerWidth <= 768) {
+      mobileData = currentFilter === "all" ? allData : allData.filter(d => d.condition === currentFilter);
       showMobileCard();
     } else {
-      renderCards(data, select.value, false);
+      renderCards(allData, currentFilter, false);
     }
   });
 }
-
 init();
 </script>
 
