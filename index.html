@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <title>Massage Conditions Guide</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 <style>
   body {
     font-family: Poppins, Arial, sans-serif;
@@ -42,8 +41,6 @@
     gap: 16px;
     padding: 20px;
   }
-
-  /* Single card centered */
   .single-card-view {
     display: flex !important;
     justify-content: center;
@@ -91,53 +88,27 @@
   .list-item {
     padding: 6px;
   }
-  .list-item:nth-child(odd) {
-    background: #f3f6fa;
-  }
-  .list-item:nth-child(even) {
-    background: #e9eff6;
-  }
+  .list-item:nth-child(odd) { background: #f3f6fa; }
+  .list-item:nth-child(even) { background: #e9eff6; }
 
-  /* Mobile Swiper */
+  /* Mobile single card view */
   @media (max-width: 768px) {
     .grid { display: none; }
-
-    .swiper { 
-      padding: 0; 
-      position: relative; 
+    #mobileCardContainer { display: block; }
+    #navButtons { display: flex; justify-content: space-between; margin: 15px 20px; }
+    #navButtons button {
+      padding: 10px 20px;
+      background: #1a3454;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
     }
-
-    .swiper-slide { 
-      width: 80%; 
-      flex-shrink: 0; 
-      position: relative;
-    }
-
-    /* Navigation arrows over top of image, vertically centered */
-    .swiper-button-next, .swiper-button-prev {
-      color: #1a3454;
-      top: 50%; 
-      transform: translateY(-50%);
-      width: 32px;
-      height: 32px;
-      border-radius: 100%;
-      z-index: 10;
-      position: absolute;
-    }
-
-    .swiper-button-next { right: 0px; }
-    .swiper-button-prev { left: 0px; }
-
-    .swiper-slide .card img {
-      width: 100%;
-      height: 320px;
-      object-fit: cover;
-      display: block;
-    }
+    .card img { height: 320px; object-fit: cover; }
   }
 
   @media (min-width: 769px) {
-    .swiper { display: none; }
+    #mobileCardContainer, #navButtons { display: none; }
   }
 </style>
 </head>
@@ -153,18 +124,19 @@
 <!-- Desktop Grid -->
 <div class="grid" id="cardContainer"></div>
 
-<!-- Mobile Swiper -->
-<div class="swiper">
-  <div class="swiper-wrapper" id="swiperContainer"></div>
-  <!-- Navigation arrows -->
-  <div class="swiper-button-next"></div>
-  <div class="swiper-button-prev"></div>
+<!-- Mobile Single Card -->
+<div id="mobileCardContainer"></div>
+<div id="navButtons">
+  <button id="prevBtn">Back</button>
+  <button id="nextBtn">Next</button>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script>
 const SUPABASE_URL = 'https://nkjxlwuextxzpeohutxz.supabase.co/rest/v1';
     const SUPABASE_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ranhsd3VleHR4enBlb2h1dHh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzIzMTI5MDQsImV4cCI6MjA0Nzg4ODkwNH0.S3qHT3l4FDV5T0uPI8q4SDo6O-87ApDILE2OTsWLg_0';
+
+let mobileData = [];
+let mobileIndex = 0;
 
 async function fetchConditions() {
   const res = await fetch(`${SUPABASE_URL}/massage?select=*`, {
@@ -197,41 +169,39 @@ function renderCardHTML(d) {
 
 function renderCards(data, filter = "all") {
   const grid = document.getElementById('cardContainer');
-  const swiperWrap = document.getElementById('swiperContainer');
   grid.innerHTML = '';
-  swiperWrap.innerHTML = '';
-
   const filtered = filter === "all" ? data : data.filter(d => d.condition === filter);
+  filtered.forEach(d => grid.innerHTML += renderCardHTML(d));
 
-  filtered.forEach(d => {
-    const cardHTML = renderCardHTML(d);
-    grid.innerHTML += cardHTML;
-    swiperWrap.innerHTML += `<div class="swiper-slide">${cardHTML}</div>`;
-  });
-
-  // Desktop: single card centering
-  if (window.innerWidth > 768) {
-    if (filtered.length === 1) grid.classList.add('single-card-view');
-    else grid.classList.remove('single-card-view');
-  }
-
-  // Mobile Swiper
-  if (window.swiper) window.swiper.destroy(true, true);
   if (window.innerWidth <= 768) {
-    window.swiper = new Swiper('.swiper', {
-      slidesPerView: 1,
-      spaceBetween: 16,
-      centeredSlides: true,
-      autoHeight: true,
-      simulateTouch: false,      // prevent swiping via touch drag
-      allowTouchMove: false,     // no accidental slide changes
-      navigation: {
-        nextEl: '.swiper-button-next',
-        prevEl: '.swiper-button-prev'
-      }
-    });
+    mobileData = filtered;
+    mobileIndex = 0;
+    showMobileCard();
+  } else {
+    // Desktop single-card centering
+    const singleCard = filtered.length === 1;
+    grid.classList.toggle('single-card-view', singleCard);
   }
 }
+
+function showMobileCard() {
+  const container = document.getElementById('mobileCardContainer');
+  if (mobileData.length === 0) {
+    container.innerHTML = '<p>No conditions found</p>';
+    return;
+  }
+  container.innerHTML = renderCardHTML(mobileData[mobileIndex]);
+}
+
+// Navigation buttons
+document.getElementById('prevBtn').addEventListener('click', () => {
+  if (mobileIndex > 0) mobileIndex--;
+  showMobileCard();
+});
+document.getElementById('nextBtn').addEventListener('click', () => {
+  if (mobileIndex < mobileData.length - 1) mobileIndex++;
+  showMobileCard();
+});
 
 async function init() {
   const data = await fetchConditions();
@@ -249,6 +219,5 @@ async function init() {
 
 init();
 </script>
-
 </body>
 </html>
