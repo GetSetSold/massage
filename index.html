@@ -218,26 +218,28 @@ function renderCards(data, filter = "all") {
   }
 
   // Mobile Swiper
-  if (window.swiper) window.swiper.destroy(true, true);
   if (window.innerWidth <= 768) {
-    window.swiper = new Swiper('.swiper', {
-      slidesPerView: 1,
-      spaceBetween: 16,
-      centeredSlides: true,
-      grabCursor: true,
-      allowTouchMove: true,
-      threshold: 50,
-      shortSwipes: false,
-      longSwipes: true,
-      longSwipesRatio: 0.25,
-      touchReleaseOnEdges: true,
-      navigation: {
-        nextEl: '.swiper-button-next',
-        prevEl: '.swiper-button-prev'
-      }
-    });
-  }
+  window.swiper = new Swiper('.swiper', {
+    slidesPerView: 1,
+    spaceBetween: 16,
+    centeredSlides: true,
+    grabCursor: true,
+    allowTouchMove: true,
+    shortSwipes: true,
+    longSwipes: true,
+    threshold: 50,
+    touchAngle: 45, // only horizontal swipes
+    simulateTouch: true,
+    touchMoveStopPropagation: false,
+    nested: true, // important to allow vertical scroll inside slide
+    resistanceRatio: 0, // prevent sliding when pulling down
+    navigation: {
+      nextEl: '.swiper-button-next',
+      prevEl: '.swiper-button-prev'
+    }
+  });
 }
+
 
 async function init() {
   const data = await fetchConditions();
