@@ -160,96 +160,100 @@
 
   <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
   <script>
-    const SUPABASE_URL = 'https://nkjxlwuextxzpeohutxz.supabase.co/rest/v1';
-    const SUPABASE_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ranhsd3VleHR4enBlb2h1dHh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzIzMTI5MDQsImV4cCI6MjA0Nzg4ODkwNH0.S3qHT3l4FDV5T0uPI8q4SDo6O-87ApDILE2OTsWLg_0';
+const SUPABASE_URL = 'https://nkjxlwuextxzpeohutxz.supabase.co/rest/v1';
+const SUPABASE_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ranhsd3VleHR4enBlb2h1dHh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzIzMTI5MDQsImV4cCI6MjA0Nzg4ODkwNH0.S3qHT3l4FDV5T0uPI8q4SDo6O-87ApDILE2OTsWLg_0';
 
-    async function fetchConditions() {
-      const res = await fetch(`${SUPABASE_URL}/massage?select=*`, {
-        headers: { apikey: SUPABASE_API_KEY, Authorization: `Bearer ${SUPABASE_API_KEY}` }
-      });
-      return await res.json();
+async function fetchConditions() {
+  const res = await fetch(`${SUPABASE_URL}/massage?select=*`, {
+    headers: { apikey: SUPABASE_API_KEY, Authorization: `Bearer ${SUPABASE_API_KEY}` }
+  });
+  return await res.json();
+}
+
+function renderList(text) {
+  if (!text) return '<div class="list-item">N/A</div>';
+  return text.split(';').map(item => `<div class="list-item">${item.trim()}</div>`).join('');
+}
+
+function renderCardHTML(d) {
+  return `
+    <div class="card">
+      ${d.image_url ? `<img src="${d.image_url}" alt="${d.condition}">` : ''}
+      <div class="card-content">
+        <h2>${d.condition}</h2>
+        <div class="section-title">Definition</div>
+        <p>${d.definition || 'N/A'}</p>
+        <div class="section-title">Best Techniques</div>
+        ${renderList(d.best_technique)}
+        <div class="section-title">Contraindications</div>
+        ${renderList(d.contraindications)}
+      </div>
+    </div>
+  `;
+}
+
+function renderCards(data, filter = "all") {
+  const grid = document.getElementById('cardContainer');
+  const swiperWrap = document.getElementById('swiperContainer');
+  grid.innerHTML = '';
+  swiperWrap.innerHTML = '';
+
+  const filtered = filter === "all" ? data : data.filter(d => d.condition === filter);
+
+  filtered.forEach(d => {
+    const cardHTML = renderCardHTML(d);
+    grid.innerHTML += cardHTML;
+    swiperWrap.innerHTML += `<div class="swiper-slide">${cardHTML}</div>`;
+  });
+
+  // Desktop: single card centering
+  if (window.innerWidth > 768) {
+    if (filtered.length === 1) {
+      grid.classList.add('single-card-view');
+    } else {
+      grid.classList.remove('single-card-view');
     }
+  }
 
-    function renderList(text) {
-      if (!text) return '<div class="list-item">N/A</div>';
-      return text.split(';').map(item => `<div class="list-item">${item.trim()}</div>`).join('');
-    }
-
-    function renderCardHTML(d) {
-      return `
-        <div class="card">
-          ${d.image_url ? `<img src="${d.image_url}" alt="${d.condition}">` : ''}
-          <div class="card-content">
-            <h2>${d.condition}</h2>
-            <div class="section-title">Definition</div>
-            <p>${d.definition || 'N/A'}</p>
-            <div class="section-title">Best Techniques</div>
-            ${renderList(d.best_technique)}
-            <div class="section-title">Contraindications</div>
-            ${renderList(d.contraindications)}
-          </div>
-        </div>
-      `;
-    }
-
-    function renderCards(data, filter = "all") {
-      const grid = document.getElementById('cardContainer');
-      const swiperWrap = document.getElementById('swiperContainer');
-      grid.innerHTML = '';
-      swiperWrap.innerHTML = '';
-
-      const filtered = filter === "all" ? data : data.filter(d => d.condition === filter);
-
-      filtered.forEach(d => {
-        const cardHTML = renderCardHTML(d);
-        grid.innerHTML += cardHTML;
-        swiperWrap.innerHTML += `<div class="swiper-slide">${cardHTML}</div>`;
-      });
-
-      // Desktop single-card view
-      if (window.innerWidth > 768) {
-        if (filtered.length === 1) {
-          grid.classList.add('single-card-view');
-        } else {
-          grid.classList.remove('single-card-view');
-        }
+  // Mobile Swiper
+  if (window.swiper) window.swiper.destroy(true, true);
+  if (window.innerWidth <= 768) {
+    window.swiper = new Swiper('.swiper', {
+      slidesPerView: 1,
+      spaceBetween: 16,
+      centeredSlides: true,
+      grabCursor: true,
+      navigation: {
+        nextEl: '.swiper-button-next',
+        prevEl: '.swiper-button-prev'
       }
+    });
+  }
+}
 
-      // Mobile Swiper
-      if (window.swiper) window.swiper.destroy(true, true);
-      window.swiper = new Swiper('.swiper', {
-        slidesPerView: 1,
-        spaceBetween: 16,
-        centeredSlides: true,
-        navigation: {
-          nextEl: '.swiper-button-next',
-          prevEl: '.swiper-button-prev'
-        }
-      });
-    }
+async function init() {
+  const data = await fetchConditions();
+  data.sort((a,b)=>a.condition.localeCompare(b.condition));
 
-    async function init() {
-      const data = await fetchConditions();
-      data.sort((a,b)=>a.condition.localeCompare(b.condition));
+  const select = document.getElementById('conditionSelect');
+  data.forEach(d => {
+    select.innerHTML += `<option value="${d.condition}">${d.condition}</option>`;
+  });
 
-      const select = document.getElementById('conditionSelect');
-      data.forEach(d => {
-        select.innerHTML += `<option value="${d.condition}">${d.condition}</option>`;
-      });
+  renderCards(data);
 
-      renderCards(data);
+  select.addEventListener('change', e => {
+    renderCards(data, e.target.value);
+  });
 
-      select.addEventListener('change', e => {
-        renderCards(data, e.target.value);
-      });
+  // Re-render on window resize to re-center single card or init swiper
+  window.addEventListener('resize', () => {
+    renderCards(data, select.value);
+  });
+}
 
-      // Recenter single card on window resize
-      window.addEventListener('resize', () => {
-        renderCards(data, select.value);
-      });
-    }
+init();
+</script>
 
-    init();
-  </script>
 </body>
 </html>
