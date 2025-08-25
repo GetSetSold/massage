@@ -6,88 +6,142 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
   <style>
-    body {
-      font-family: Poppins, Arial, sans-serif;
-      background: #f9fafb;
-      margin: 0;
-      padding: 0;
-    }
-    header {
-      position: sticky;
-      top: 0;
-      background: #1a3454;
-      padding: 10px;
-      z-index: 100;
-      display: flex;
-      justify-content: center;
-    }
-    header select {
-      padding: 10px;
-      border-radius: 6px;
-      border: none;
-      font-size: 16px;
-      width: 80%;
-      max-width: 400px;
-    }
-    h1 {
-      text-align: center;
-      padding: 15px;
-      color: #1a3454;
-    }
-    /* Desktop grid */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 16px;
-      padding: 20px;
-    }
-    /* Card style */
-    .card {
-      background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      padding: 15px;
-    }
-    .card h2 {
-      font-size: 38px;
-      color: #ff0000;
-      margin-bottom: 8px;
-      text-align: left;
-    }
-    .section-title {
-      font-weight: 600;
-      border-bottom: 2px solid #cee0f3;
-      margin: 12px 0 6px;
-      padding-bottom: 4px;
-      color: #1a3454;
-    }
-    .list-item {
-      padding: 6px;
-    }
-    .list-item:nth-child(odd) {
-      background: #f3f6fa;
-    }
-    .list-item:nth-child(even) {
-      background: #e9eff6;
-    }
-    img {
-      max-width: 100%;
-      border-radius: 6px;
-      margin-top: 10px;
-    }
-    /* Mobile Swiper */
-    @media (max-width: 768px) {
-      .grid { display: none; }
-      .swiper { padding: 20px 10px; }
-      .swiper-slide { width: 80%; flex-shrink: 0; }
-      .swiper-button-next, .swiper-button-prev {
-        color: #1a3454;
-      }
-    }
-    @media (min-width: 769px) {
-      .swiper { display: none; }
-    }
-  </style>
+  body {
+    font-family: Poppins, Arial, sans-serif;
+    background: #f9fafb;
+    margin: 0;
+    padding: 0;
+  }
+
+  header {
+    position: sticky;
+    top: 0;
+    background: #1a3454;
+    padding: 10px;
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+  }
+
+  header select {
+    padding: 10px;
+    border-radius: 6px;
+    border: none;
+    font-size: 16px;
+    width: 80%;
+    max-width: 400px;
+  }
+
+  h1 {
+    text-align: center;
+    padding: 15px;
+    color: #1a3454;
+  }
+
+  /* Desktop grid */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    padding: 20px;
+  }
+
+  /* Card style */
+  .card {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .card img {
+    width: 100%;
+    height: 320px;
+    object-fit: cover; /* image fills width without stretching */
+    display: block;
+  }
+
+  .card-content {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .card h2 {
+    font-size: 32px;
+    color: #ff0000;
+    margin: 0 0 8px 0;
+    text-align: left;
+  }
+
+  .section-title {
+    font-weight: 600;
+    border-bottom: 2px solid #cee0f3;
+    margin: 12px 0 6px;
+    padding-bottom: 4px;
+    color: #1a3454;
+  }
+
+  .list-item {
+    padding: 6px;
+  }
+
+  .list-item:nth-child(odd) {
+    background: #f3f6fa;
+  }
+
+  .list-item:nth-child(even) {
+    background: #e9eff6;
+  }
+
+  /* Mobile Swiper */
+@media (max-width: 768px) {
+  .grid { display: none; }
+
+  .swiper { 
+    padding: 0; 
+    position: relative; 
+  }
+
+  .swiper-slide { 
+    width: 80%; 
+    flex-shrink: 0; 
+    position: relative; /* for absolute arrows */
+  }
+
+  /* Navigation arrows over top of image */
+  .swiper-button-next, .swiper-button-prev {
+    color: #fff;
+    top: 10px; /* distance from top of image */
+    transform: translateY(10); 
+    width: 32px;
+    height: 32px;
+    padding-top: 150px;
+    
+ 
+    z-index: 10;
+    position: absolute; /* place over image */
+  }
+
+  .swiper-button-next { right: 10px; }
+  .swiper-button-prev { left: 0px; }
+
+  .swiper-slide .card img {
+    width: 100%;
+    height: 320px;
+    object-fit: fit;
+    display: block;
+  }
+}
+
+
+  @media (min-width: 769px) {
+    .swiper { display: none; }
+  }
+</style>
+
 </head>
 <body>
   <h1>Massage Conditions Guide</h1>
@@ -129,14 +183,16 @@
     function renderCardHTML(d) {
       return `
         <div class="card">
-        ${d.image_url ? `<img src="${d.image_url}" alt="${d.condition}">` : ''}
-          <h2>${d.condition}</h2>
-          <div class="section-title">Definition</div>
-          <p>${d.definition || 'N/A'}</p>
-          <div class="section-title">Best Techniques</div>
-          ${renderList(d.best_technique)}
-          <div class="section-title">Contraindications</div>
-          ${renderList(d.contraindications)}
+          ${d.image_url ? `<img src="${d.image_url}" alt="${d.condition}">` : ''}
+          <div class="card-content">
+            <h2>${d.condition}</h2>
+            <div class="section-title">Definition</div>
+            <p>${d.definition || 'N/A'}</p>
+            <div class="section-title">Best Techniques</div>
+            ${renderList(d.best_technique)}
+            <div class="section-title">Contraindications</div>
+            ${renderList(d.contraindications)}
+          </div>
         </div>
       `;
     }
@@ -155,7 +211,6 @@
         swiperWrap.innerHTML += `<div class="swiper-slide">${cardHTML}</div>`;
       });
 
-      // Init or re-init swiper for mobile
       if (window.swiper) window.swiper.destroy(true, true);
       window.swiper = new Swiper('.swiper', {
         slidesPerView: 1,
