@@ -4,165 +4,187 @@
   <meta charset="UTF-8">
   <title>Massage Conditions Guide</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
   <style>
     body {
-      font-family: 'Poppins', sans-serif;
+      font-family: Poppins, Arial, sans-serif;
+      background: #f9fafb;
       margin: 0;
-      background: #f9f9f9;
-      color: #333;
+      padding: 0;
     }
-
     header {
       position: sticky;
       top: 0;
       background: #1a3454;
-      color: #fff;
-      padding: 10px 20px;
+      padding: 10px;
+      z-index: 100;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      z-index: 10;
+      justify-content: center;
     }
-
-    header h1 {
-      margin: 0;
-      font-size: 1.2rem;
-    }
-
-    select {
-      padding: 8px;
-      font-size: 1rem;
+    header select {
+      padding: 10px;
       border-radius: 6px;
       border: none;
-      outline: none;
+      font-size: 16px;
+      width: 80%;
+      max-width: 400px;
     }
-
+    h1 {
+      text-align: center;
+      padding: 15px;
+      color: #1a3454;
+    }
+    /* Desktop grid */
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
       padding: 20px;
     }
-
+    /* Card style */
     .card {
       background: #fff;
       border-radius: 10px;
-      padding: 15px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      transition: transform 0.2s ease;
+      padding: 15px;
     }
-
-    .card:hover {
-      transform: translateY(-3px);
-    }
-
-    .card:nth-child(even) { background: #f1f5f9; } /* alternate shade */
-
     .card h2 {
-      font-size: 1.1rem;
-      margin-bottom: 10px;
-      color: #1a3454;
-      border-bottom: 2px solid #eee;
-      padding-bottom: 4px;
+      font-size: 38px;
+      color: #ff0000;
+      margin-bottom: 8px;
+      text-align: center;
     }
-
     .section-title {
       font-weight: 600;
-      text-decoration: underline;
+      border-bottom: 2px solid #cee0f3;
+      margin: 12px 0 6px;
+      padding-bottom: 4px;
+      color: #1a3454;
+    }
+    .list-item {
+      padding: 6px;
+    }
+    .list-item:nth-child(odd) {
+      background: #f3f6fa;
+    }
+    .list-item:nth-child(even) {
+      background: #e9eff6;
+    }
+    img {
+      max-width: 100%;
+      border-radius: 6px;
       margin-top: 10px;
     }
-
-    .list-line {
-      padding: 4px 0;
-      border-bottom: 1px solid #ddd;
+    /* Mobile Swiper */
+    @media (max-width: 768px) {
+      .grid { display: none; }
+      .swiper { padding: 20px 10px; }
+      .swiper-slide { width: 80%; flex-shrink: 0; }
+      .swiper-button-next, .swiper-button-prev {
+        color: #1a3454;
+      }
     }
-
-    .list-line:last-child {
-      border-bottom: none;
+    @media (min-width: 769px) {
+      .swiper { display: none; }
     }
   </style>
 </head>
 <body>
+  <h1>Massage Conditions Guide</h1>
 
-<header>
-  <h1>Massage Conditions</h1>
-  <select id="conditionSelect">
-    <option value="">-- Select Condition --</option>
-  </select>
-</header>
+  <header>
+    <select id="conditionSelect">
+      <option value="all">All Conditions</option>
+    </select>
+  </header>
 
-<div id="cards" class="grid"></div>
+  <!-- Desktop Grid -->
+  <div class="grid" id="cardContainer"></div>
 
-<script>
-const SUPABASE_URL = 'https://nkjxlwuextxzpeohutxz.supabase.co/rest/v1';
-const SUPABASE_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ranhsd3VleHR4enBlb2h1dHh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzIzMTI5MDQsImV4cCI6MjA0Nzg4ODkwNH0.S3qHT3l4FDV5T0uPI8q4SDo6O-87ApDILE2OTsWLg_0';
+  <!-- Mobile Swiper -->
+  <div class="swiper">
+    <div class="swiper-wrapper" id="swiperContainer"></div>
+    <!-- Navigation arrows -->
+    <div class="swiper-button-next"></div>
+    <div class="swiper-button-prev"></div>
+  </div>
 
-// Load data from Supabase
-async function fetchData() {
-  const res = await fetch(`${SUPABASE_URL}/massage?select=*`, {
-    headers: { apikey: SUPABASE_API_KEY, Authorization: `Bearer ${SUPABASE_API_KEY}` }
-  });
-  return await res.json();
-}
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+  <script>
+    const SUPABASE_URL = 'https://nkjxlwuextxzpeohutxz.supabase.co/rest/v1';
+    const SUPABASE_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ranhsd3VleHR4enBlb2h1dHh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzIzMTI5MDQsImV4cCI6MjA0Nzg4ODkwNH0.S3qHT3l4FDV5T0uPI8q4SDo6O-87ApDILE2OTsWLg_0';
 
-function splitItems(text) {
-  if (!text) return [];
-  return text.split(';').map(t => t.trim()).filter(Boolean);
-}
-
-function createCard(record) {
-  return `
-    <div class="card">
-      <h2>${record.Condition || 'Unknown Condition'}</h2>
-      <div>
-        <div class="section-title">Definition:</div>
-        <p>${record.Definition || 'N/A'}</p>
-      </div>
-      <div>
-        <div class="section-title">Best Techniques:</div>
-        ${splitItems(record.BestMassageTechnique).map(t => `<div class="list-line">${t}</div>`).join('')}
-      </div>
-      <div>
-        <div class="section-title">Contraindications:</div>
-        ${splitItems(record.MassageContraindication).map(c => `<div class="list-line">${c}</div>`).join('')}
-      </div>
-    </div>
-  `;
-}
-
-async function init() {
-  const data = await fetchData();
-  
-  // Fill dropdown sorted alphabetically
-  const select = document.getElementById('conditionSelect');
-  const sorted = [...data].sort((a,b) => a.Condition.localeCompare(b.Condition));
-  sorted.forEach(item => {
-    const opt = document.createElement('option');
-    opt.value = item.Condition;
-    opt.textContent = item.Condition;
-    select.appendChild(opt);
-  });
-
-  // Show all cards initially
-  const container = document.getElementById('cards');
-  container.innerHTML = sorted.map(createCard).join('');
-
-  // Filter on selection
-  select.addEventListener('change', e => {
-    const val = e.target.value;
-    if (!val) {
-      container.innerHTML = sorted.map(createCard).join('');
-    } else {
-      const match = data.find(d => d.Condition === val);
-      container.innerHTML = match ? createCard(match) : '<p>No data found</p>';
+    async function fetchConditions() {
+      const res = await fetch(`${SUPABASE_URL}/massage?select=*`, {
+        headers: { apikey: SUPABASE_API_KEY, Authorization: `Bearer ${SUPABASE_API_KEY}` }
+      });
+      return await res.json();
     }
-  });
-}
 
-init();
-</script>
+    function renderList(text) {
+      if (!text) return '<div class="list-item">N/A</div>';
+      return text.split(';').map(item => `<div class="list-item">${item.trim()}</div>`).join('');
+    }
 
+    function renderCardHTML(d) {
+      return `
+        <div class="card">
+          <h2>${d.condition}</h2>
+          ${d.image_url ? `<img src="${d.image_url}" alt="${d.condition}">` : ''}
+          <div class="section-title">Definition</div>
+          <p>${d.definition || 'N/A'}</p>
+          <div class="section-title">Best Techniques</div>
+          ${renderList(d.best_technique)}
+          <div class="section-title">Contraindications</div>
+          ${renderList(d.contraindications)}
+        </div>
+      `;
+    }
+
+    function renderCards(data, filter = "all") {
+      const grid = document.getElementById('cardContainer');
+      const swiperWrap = document.getElementById('swiperContainer');
+      grid.innerHTML = '';
+      swiperWrap.innerHTML = '';
+
+      const filtered = filter === "all" ? data : data.filter(d => d.condition === filter);
+
+      filtered.forEach(d => {
+        const cardHTML = renderCardHTML(d);
+        grid.innerHTML += cardHTML;
+        swiperWrap.innerHTML += `<div class="swiper-slide">${cardHTML}</div>`;
+      });
+
+      // Init or re-init swiper for mobile
+      if (window.swiper) window.swiper.destroy(true, true);
+      window.swiper = new Swiper('.swiper', {
+        slidesPerView: 1,
+        spaceBetween: 16,
+        centeredSlides: true,
+        navigation: {
+          nextEl: '.swiper-button-next',
+          prevEl: '.swiper-button-prev'
+        }
+      });
+    }
+
+    async function init() {
+      const data = await fetchConditions();
+      data.sort((a,b)=>a.condition.localeCompare(b.condition));
+
+      const select = document.getElementById('conditionSelect');
+      data.forEach(d => {
+        select.innerHTML += `<option value="${d.condition}">${d.condition}</option>`;
+      });
+
+      renderCards(data);
+
+      select.addEventListener('change', e => {
+        renderCards(data, e.target.value);
+      });
+    }
+
+    init();
+  </script>
 </body>
 </html>
