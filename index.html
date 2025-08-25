@@ -58,7 +58,6 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    
   }
   .card img {
     width: 100%;
@@ -114,11 +113,10 @@
     /* Navigation arrows over top of image, vertically centered */
     .swiper-button-next, .swiper-button-prev {
       color: #1a3454;
-      top: 20%; 
+      top: 50%; 
       transform: translateY(-50%);
       width: 32px;
       height: 32px;
-      
       border-radius: 100%;
       z-index: 10;
       position: absolute;
@@ -163,7 +161,7 @@
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script>
 const SUPABASE_URL = 'https://nkjxlwuextxzpeohutxz.supabase.co/rest/v1';
-    const SUPABASE_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ranhsd3VleHR4enBlb2h1dHh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzIzMTI5MDQsImV4cCI6MjA0Nzg4ODkwNH0.S3qHT3l4FDV5T0uPI8q4SDo6O-87ApDILE2OTsWLg_0';
+const SUPABASE_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ranhsd3VleHR4enBlb2h1dHh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzIzMTI5MDQsImV4cCI6MjA0Nzg4ODkwNH0.S3qHT3l4FDV5T0uPI8q4SDo6O-87ApDILE2OTsWLg_0';
 
 async function fetchConditions() {
   const res = await fetch(`${SUPABASE_URL}/massage?select=*`, {
@@ -218,28 +216,29 @@ function renderCards(data, filter = "all") {
   }
 
   // Mobile Swiper
+  if (window.swiper) window.swiper.destroy(true, true);
   if (window.innerWidth <= 768) {
-  window.swiper = new Swiper('.swiper', {
-    slidesPerView: 1,
-    spaceBetween: 16,
-    centeredSlides: true,
-    grabCursor: true,
-    allowTouchMove: true,
-    shortSwipes: true,
-    longSwipes: true,
-    threshold: 50,
-    touchAngle: 45, // only horizontal swipes
-    simulateTouch: true,
-    touchMoveStopPropagation: false,
-    nested: true, // important to allow vertical scroll inside slide
-    resistanceRatio: 0, // prevent sliding when pulling down
-    navigation: {
-      nextEl: '.swiper-button-next',
-      prevEl: '.swiper-button-prev'
-    }
-  });
+    window.swiper = new Swiper('.swiper', {
+      slidesPerView: 1,
+      spaceBetween: 16,
+      centeredSlides: true,
+      grabCursor: true,
+      allowTouchMove: true,
+      threshold: 10,
+      shortSwipes: false,
+      longSwipes: true,
+      longSwipesRatio: 0.25,
+      touchReleaseOnEdges: true,
+      touchAngle: 45, // only horizontal swipes count
+      nested: true,   // allow vertical scroll inside slide
+      autoHeight: true, // adjust height to content
+      navigation: {
+        nextEl: '.swiper-button-next',
+        prevEl: '.swiper-button-prev'
+      }
+    });
+  }
 }
-
 
 async function init() {
   const data = await fetchConditions();
@@ -256,7 +255,6 @@ async function init() {
     renderCards(data, e.target.value);
   });
 
-  // Re-render on window resize
   window.addEventListener('resize', () => {
     renderCards(data, select.value);
   });
