@@ -129,8 +129,8 @@
     function renderCardHTML(d) {
       return `
         <div class="card">
+        ${d.image_url ? `<img src="${d.image_url}" alt="${d.condition}">` : ''}
           <h2>${d.condition}</h2>
-          ${d.image_url ? `<img src="${d.image_url}" alt="${d.condition}">` : ''}
           <div class="section-title">Definition</div>
           <p>${d.definition || 'N/A'}</p>
           <div class="section-title">Best Techniques</div>
