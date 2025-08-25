@@ -62,7 +62,7 @@
 
   .card img {
     width: 100%;
-    object-fit: cover;
+    object-fit: fit;
   }
 
   .card-content {
@@ -93,40 +93,74 @@
   .list-item:nth-child(odd) { background: #f3f6fa; }
   .list-item:nth-child(even) { background: #e9eff6; }
 
+  
   /* Mobile single card view */
-  @media (max-width: 768px) {
-    .grid { display: none; }
-    #mobileCardContainer { 
-      height: calc(100vh - 120px); /* header + navButtons height */
-      overflow-y: auto;
-      padding: 30px 10px;
-      box-sizing: border-box;
-    }
-    .card img { height: 200px; object-fit: cover; }
-    .card-content { height: auto; }
-
-    #navButtons {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      padding: 10px 20px;
-      background: #f9fafb;
-      box-shadow: 0 -2px 6px rgba(0,0,0,0.1);
-      z-index: 1000;
-    }
-    #navButtons button {
-      padding: 10px 20px;
-      background: #1a3454;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      font-size: 16px;
-    }
+@media (max-width: 768px) {
+  .grid {
+    display: none;
   }
 
+  #mobileCardContainer {
+  height: calc(100vh - 120px); /* header + navButtons height */
+  overflow-y: auto;
+  box-sizing: border-box;
+  width: 90%;
+  margin: 0 auto;
+  padding: 20px 0; /* ⬅️ adds space at top and bottom inside */
+  padding-bottom: 100px;
+  
+  
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+
+  /* Hide scrollbar */
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+#mobileCardContainer::-webkit-scrollbar {
+  display: none;
+}
+
+  .card img {
+    height: 200px;
+    object-fit: cover;
+  }
+
+  .card-content {
+    height: 100%;
+    
+  }
+
+  #navButtons {
+  position: fixed;
+  bottom: 0;
+  left: 50%;                          /* Move to center of screen */
+  transform: translateX(-50%);        /* Shift back half its width */
+  width: 90%;
+  max-width: 768px;
+  
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background: #f9fafb;
+  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+
+  #navButtons button {
+    padding: 10px 20px;
+    background: #1a3454;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+  }
+}
+
+  
+  
   @media (min-width: 769px) {
     #mobileCardContainer, #navButtons { display: none; }
   }
